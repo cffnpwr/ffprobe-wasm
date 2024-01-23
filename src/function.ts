@@ -43,17 +43,30 @@ export const getInfo = async (
   { result: "ok"; fileInfo: FileInfo } | { result: "err"; error: string }
 > => {
   if (!(path instanceof URL)) {
-    path = new URL(path);
+    try {
+      path = new URL(path);
+    } catch {
+      return { result: "err", error: "Invalid input: not URL" };
+    }
   }
   const filename = `/${path.pathname.split("/").slice(-1)[0]}`;
+  if (!filename) {
+    return { result: "err", error: "Invalid input: not video" };
+  }
   const file = wasi.fs.open(filename, {
     read: true,
     write: true,
     create: true,
   });
-  await fetch(path).then((res) => res.arrayBuffer()).then((buf) =>
-    file.write(new Uint8Array(buf))
-  );
+  const res = await fetch(path);
+  if (!res.ok || !res.headers.get("Content-Type")?.includes("video")) {
+    res.body?.cancel();
+    
+    return { result: "err", error: "Invalid input: not video" };
+  }
+
+  const buf = await res.arrayBuffer();
+  file.write(new Uint8Array(buf))
   file.seek(0);
 
   const { ptr, len } = utf8Encode(filename);
