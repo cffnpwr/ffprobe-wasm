@@ -1,6 +1,5 @@
 {
   "tasks": {
-    "dev": "deno run --watch main.ts",
     "build": "cargo build --target wasm32-wasi --release && mkdir -p ./built && cp ./target/wasm32-wasi/release/ffprobe_wasm.wasm ./built/ffprobe.wasm"
   }
 }
