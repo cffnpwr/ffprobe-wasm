@@ -1,0 +1,49 @@
+package cffnpwr:ffprobe;
+
+interface types {
+    record file-info {
+        name: string,
+        bit-rate: float32,
+        duration: float32,
+        url: string,
+        nb-streams: s32,
+        flag-s: s32,
+        nb-chapters: s32,
+        streams: list<stream-info>
+    }
+
+    record tag {
+        key: string,
+        value: string
+    }
+
+    record stream-info {
+        id: s32,
+        start-time: float32,
+        duration: float32,
+        codec-type: s32,
+        codec-name: string,
+        format: string,
+        bit-rate: float32,
+        profile: string,
+        level: s32,
+        width: s32,
+        height: s32,
+        channels: s32,
+        sample-rate: s32,
+        frame-size: s32,
+        tags: list<tag>
+    }
+        
+}
+
+world ffprobe {
+    use types.{file-info};
+
+    export init: func();
+    export libavformat-version: func() -> string;
+    export libavcodec-version: func() -> string;
+    export libavutil-version: func() -> string;
+
+    export get-info: func(buffer: string) -> result<file-info, string>;
+}

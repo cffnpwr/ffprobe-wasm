@@ -1,0 +1,3 @@
+[build]
+target = "wasm32-wasi"
+rustflags = ["-l", "wasi-emulated-signal", "-l", "wasi-emulated-process-clocks"]

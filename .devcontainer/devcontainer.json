@@ -1,0 +1,17 @@
+{
+    "name": "Deno FFprobe WASM",
+    "dockerFile": "Dockerfile",
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "denoland.vscode-deno",
+                "vadimcn.vscode-lldb",
+                "Swellaby.rust-pack",
+                "dtsvet.vscode-wasm",
+                "bytecodealliance.wit-idl"
+            ]
+        }
+    }
+}

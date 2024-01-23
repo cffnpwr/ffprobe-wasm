@@ -1,0 +1,18 @@
+[package]
+name = "ffprobe-wasm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+console_error_panic_hook = { version = "0.1.7", optional = true }
+ffprobe-rs = { version = "0.1.0", path = "../core" }
+wee_alloc = { version = "0.4.5", optional = true }
+wit-bindgen = "0.16.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+default = ["console_error_panic_hook", "wee_alloc"]
+console_error_panic_hook = ["dep:console_error_panic_hook"]
+wee_alloc = ["dep:wee_alloc"]
