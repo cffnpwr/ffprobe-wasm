@@ -38,35 +38,55 @@ export const libavutilVersion = (): string => {
 };
 
 export const getInfo = async (
-  path: string | URL,
+  input: unknown,
 ): Promise<
   { result: "ok"; fileInfo: FileInfo } | { result: "err"; error: string }
 > => {
-  if (!(path instanceof URL)) {
+  if (typeof input === "string") {
     try {
-      path = new URL(path);
+      input = new URL(input);
     } catch {
       return { result: "err", error: "Invalid input: not URL" };
     }
   }
-  const filename = `/${path.pathname.split("/").slice(-1)[0]}`;
-  if (!filename) {
-    return { result: "err", error: "Invalid input: not video" };
+
+  let filename = "/tmpvideo";
+  let buf: Uint8Array;
+  if (input instanceof URL) {
+    filename = `/${input.pathname.split("/").slice(-1)[0]}`;
+    if (!filename) {
+      return { result: "err", error: "Invalid input: not video" };
+    }
+    const res = await fetch(input);
+    if (!res.ok || !res.headers.get("Content-Type")?.includes("video")) {
+      res.body?.cancel();
+
+      return { result: "err", error: "Invalid input: not video" };
+    }
+
+    buf = new Uint8Array(await res.arrayBuffer());
+  } else if (input instanceof File || input instanceof Blob) {
+    filename = input instanceof File ? `/${input.name}` : filename;
+    buf = new Uint8Array(await input.arrayBuffer());
+  } else if (input instanceof Uint8Array) {
+    buf = input;
+  } else if (input instanceof ArrayBuffer) {
+    buf = new Uint8Array(input);
+  } else if (
+    input instanceof Object && "buffer" in input &&
+    input.buffer instanceof ArrayBuffer
+  ) {
+    buf = new Uint8Array(input.buffer);
+  } else {
+    return { result: "err", error: "Invalid input" };
   }
+
   const file = wasi.fs.open(filename, {
     read: true,
     write: true,
     create: true,
   });
-  const res = await fetch(path);
-  if (!res.ok || !res.headers.get("Content-Type")?.includes("video")) {
-    res.body?.cancel();
-    
-    return { result: "err", error: "Invalid input: not video" };
-  }
-
-  const buf = await res.arrayBuffer();
-  file.write(new Uint8Array(buf))
+  file.write(buf);
   file.seek(0);
 
   const { ptr, len } = utf8Encode(filename);
